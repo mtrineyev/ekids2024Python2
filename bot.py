@@ -18,6 +18,21 @@ from components.settings import TELEGRAM_TOKEN
 bot = TeleBot(TELEGRAM_TOKEN)
 
 
+def ping_pong(text: str) -> str:
+    if not text.isdigit():
+        return text
+    n = int(text)
+    if (n % 3 == 0) and (n % 5 == 0):
+        answer = "Ping Pong"
+    elif n % 3 == 0:
+        answer = "Ping"
+    elif n % 5 == 0:
+        answer = "Pong"
+    else:
+        answer = text
+    return answer
+
+
 @bot.message_handler(content_types=['text'])
 def handle_message(message) -> None:
     """
@@ -33,7 +48,7 @@ def handle_message(message) -> None:
     """
     print(
         f"{message.from_user.first_name} [{message.chat.id=}]: {message.text}")
-    bot.send_message(message.chat.id, message.text)
+    bot.send_message(message.chat.id, ping_pong(message.text))
 
 
 if __name__ == "__main__":
