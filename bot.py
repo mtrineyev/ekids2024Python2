@@ -14,6 +14,7 @@ from telebot import TeleBot
 from telebot.types import BotCommand
 from components.settings import TELEGRAM_TOKEN
 from random import choice, randint
+from urllib.parse import quote_plus
 
 COMMANDS = {
     "dice": "Гральний кубик",
@@ -21,8 +22,8 @@ COMMANDS = {
     "max": "Знайти максимальне число",
     "min": "Знайти мінімальне число",
     "pingpong": "Міні гра 'Пінг Понг'",
+    "qr": "Створити QR-код",
 }
-
 GREETINGS = (
     "Hello",
     "Привіт",
@@ -30,8 +31,12 @@ GREETINGS = (
     "Aloha",
     "Здоровенькі були",
 )
-
 DICE_NUMBERS = ("0️⃣", "1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣")
+
+# QR Api documentation: https://goqr.me/api/doc/create-qr-code/
+QR_SIZE = 200
+QR_API = \
+    "https://api.qrserver.com/v1/create-qr-code/?size={size}x{size}&data={data}"
 
 
 bot = TeleBot(TELEGRAM_TOKEN)
@@ -112,13 +117,24 @@ def dice(message) -> None:
     bot.send_message(message.chat.id, DICE_NUMBERS[randint(1, 6)])
 
 
+@bot.message_handler(commands=["qr"])
+def qr_generator(message):
+    qr_data = message.text[len("/qr "):]
+    bot.send_photo(
+        message.chat.id,
+        # open("img.png", "rb"),
+        QR_API.format(size=QR_SIZE, data=quote_plus(qr_data)),
+        caption=qr_data
+    )
+
+
 def listener(messages):
     for m in messages:
-        if m.content_type == 'text':
+        if m.content_type == "text":
             print(f"{m.from_user.first_name} [{m.chat.id=}]: {m.text}")
 
 
-@bot.message_handler(content_types=['text'])
+@bot.message_handler(content_types=["text"])
 def handle_message(message) -> None:
     """
     Обробник текстових повідомлень.
